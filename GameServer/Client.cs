@@ -1,5 +1,7 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 namespace GameServer
 {
@@ -35,6 +37,32 @@ namespace GameServer
                 socket.SendBufferSize = dataBufferSize;
 
                 stream = socket.GetStream();
+
+                receiveBuffer = new byte[dataBufferSize];
+
+                stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
+            }
+
+            private void ReceiveCallback(IAsyncResult _result)
+            {
+                try
+                {
+                    int byteLength = stream.EndRead(_result);
+                    if(byteLength <= 0)
+                    {
+                        return;
+                    }
+
+                    byte[] data = new byte[byteLength];
+                    Array.Copy(receiveBuffer, data, byteLength);
+
+                    stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error receiving TCP data: {ex}");
+                    throw;
+                }
             }
         }
     }
