@@ -41,6 +41,23 @@ namespace GameServer
                 receiveBuffer = new byte[dataBufferSize];
 
                 stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
+
+                ServerSend.Welcome(id, "Welcome to the server!");
+            }
+
+            public void SendData(Packet packet)
+            {
+                try
+                {
+                    if (socket != null)
+                    {
+                        stream.BeginWrite(packet.ToArray(), 0, packet.Length(), null, null);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending data to player {id} via TCP: {ex}");
+                }
             }
 
             private void ReceiveCallback(IAsyncResult _result)
